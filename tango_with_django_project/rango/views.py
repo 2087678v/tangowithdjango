@@ -9,6 +9,7 @@ from rango.forms import UserForm, UserProfileForm
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
 
 def index(request):
     # Query the database for a list of ALL categories currently stored.
@@ -208,9 +209,9 @@ def user_login(request):
         
 @login_required
 def restricted(request):
-    return HttpResponse("Since you're logged in, you can see this text!")
+    return render(request, 'rango/restricted.html', {})
     
-from django.contrib.auth import logout
+
 
 # Use the login_required() decorator to ensure only those logged in can access the view.
 @login_required
