@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block title %}Rango users{% endblock %}
+
+{% block body_block %}
+    {% for user in users %}
+        <li> <a href="{% url 'profile' user.username %}"> {{user}} </a> </li>
+    {% endfor %}
+{% endblock %}

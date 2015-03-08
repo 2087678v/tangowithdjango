@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from rango.models import Category
 from rango.models import Page
+from rango.models import UserProfile
 from rango.forms import CategoryForm
 from rango.forms import PageForm
 from rango.forms import UserForm, UserProfileForm
@@ -13,6 +14,7 @@ from django.contrib.auth import logout
 from datetime import datetime
 from rango.bing_search import run_query
 from django.shortcuts import redirect
+from django.contrib.auth.models import User
 
 def index(request):
     category_list = Category.objects.order_by('-likes')[:5]
@@ -277,4 +279,45 @@ def track_url(request):
             pass
     return redirect(url)
 
+def users(request):
+    users = User.objects.order_by('username')
+    return render(request, 'rango/users.html', {'users':users})
+    
+def profile(request, user_name):
+    context_dict = {}
+    try:
+        user = User.objects.get(username=user_name)
+        context_dict['username'] = user
+    except:
+        pass
+    try:
+        profile = UserProfile.objects.get(user=user)
+        context_dict['profile'] = profile
+    except:
+        pass
+    return render(request, 'rango/profile.html', context_dict)
 
+@login_required
+def register_profile(request):
+    context_dict = {}
+    registered = False
+    if request.method == 'POST':
+        try:
+            profile = UserProfile.objects.get(user=request.user)
+            profile_form = UserProfileForm(request.POST, instance=profile)
+        except:
+            profile_form = UserProfileForm(request.POST)
+        if profile_form.is_valid():
+            profile = profile_form.save(commit=False)
+            profile.user = request.user
+            if 'picture' in request.FILES:
+                profile.picture = request.FILES['picture']
+            profile.save()
+            registered = True
+        else:
+            print profile_form.errors
+    else:
+        profile_form = UserProfileForm()
+    context_dict['profile_form'] = profile_form
+    context_dict['registered'] = registered
+    return render(request, 'registration/profile_registration.html', context_dict)
